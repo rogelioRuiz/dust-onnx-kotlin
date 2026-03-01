@@ -15,8 +15,10 @@ ext {
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
+
+plugins {
+    id 'net.thebugmc.gradle.sonatype-central-portal-publisher' version '1.2.4'
+}
 
 def versionFile = file('VERSION')
 version = versionFile.exists() ? versionFile.text.trim() : '0.1.0'
@@ -64,7 +66,7 @@ allprojects {
 }
 
 dependencies {
-    implementation project(':dust-core-kotlin')
+    implementation 'io.t6x.dust:dust-core:0.1.0'
     implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.20.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0'
     testImplementation "junit:junit:$junitVersion"
@@ -72,56 +74,35 @@ dependencies {
     testImplementation 'org.robolectric:robolectric:4.14.1'
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
-                groupId = project.group
-                artifactId = 'dust-onnx'
-                version = project.version
+centralPortal {
+    username = findProperty('centralPortal.username') ?: ''
+    password = findProperty('centralPortal.password') ?: ''
 
-                pom {
-                    name = 'dust-onnx-kotlin'
-                    description = 'Android ONNX runtime session management and preprocessing for Dust'
-                    url = 'https://github.com/rogelioRuiz/dust-onnx-kotlin'
-                    licenses {
-                        license {
-                            name = 'The Apache License, Version 2.0'
-                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        }
-                    }
-                    developers {
-                        developer {
-                            id = 't6x'
-                            name = 'T6X'
-                            email = 'dev@t6x.io'
-                        }
-                    }
-                    scm {
-                        connection = 'scm:git:git://github.com/rogelioRuiz/dust-onnx-kotlin.git'
-                        developerConnection = 'scm:git:ssh://github.com/rogelioRuiz/dust-onnx-kotlin.git'
-                        url = 'https://github.com/rogelioRuiz/dust-onnx-kotlin'
-                    }
-                }
+    pom {
+        name = 'dust-onnx'
+        description = 'Android ONNX runtime session management and preprocessing for Dust'
+        url = 'https://github.com/rogelioRuiz/dust-onnx-kotlin'
+        licenses {
+            license {
+                name = 'The Apache License, Version 2.0'
+                url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
             }
         }
-
-        repositories {
-            maven {
-                name = 'sonatype'
-                url = version.toString().endsWith('SNAPSHOT')
-                    ? 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
-                    : 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
-                credentials {
-                    username = findProperty('ossrhUsername') ?: ''
-                    password = findProperty('ossrhPassword') ?: ''
-                }
+        developers {
+            developer {
+                id = 't6x'
+                name = 'T6X'
+                email = 'dev@t6x.io'
             }
         }
+        scm {
+            connection = 'scm:git:git://github.com/rogelioRuiz/dust-onnx-kotlin.git'
+            developerConnection = 'scm:git:ssh://github.com/rogelioRuiz/dust-onnx-kotlin.git'
+            url = 'https://github.com/rogelioRuiz/dust-onnx-kotlin'
+        }
     }
+}
 
-    signing {
-        sign publishing.publications
-    }
+signing {
+    sign publishing.publications
 }
